@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webAppName": {
+      "type": "string",
+      "defaultValue": "ContactDatabaseWebApp",
+      "metadata": {
+        "description": "Name for the Web App"
+      }
+    },
+    "sqlServerName": {
+      "type": "string",
+      "defaultValue": "ContactDatabaseSqlServer",
+      "metadata": {
+        "description": "Name for the SQL Server"
+      }
+    },
+    "sqlDatabaseName": {
+      "type": "string",
+      "defaultValue": "ContactDatabaseSqlDb",
+      "metadata": {
+        "description": "Name for the SQL Database"
+      }
+    },
+    "sqlAdministratorLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "Login for the SQL administrator"
+      }
+    },
+    "sqlAdministratorLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the SQL administrator"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2019-08-01",
+      "name": "[parameters('webAppName')]",
+      "location": "[resourceGroup().location]",
+      "kind": "app",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('webAppName'))]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2019-06-01-preview",
+      "name": "[parameters('sqlServerName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]"
+      },
+      "resources": [
+        {
+          "type": "databases",
+          "apiVersion": "2019-06-01-preview",
+          "name": "[parameters('sqlDatabaseName')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+          ]
+        }
+      ]
+    }
+  ]
+}
